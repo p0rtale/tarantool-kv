@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  tarantool:
+    image: tarantool/tarantool:2.10
+    container_name: tarantool
+    ports:
+      - "3301:3301"
+    volumes:
+      - ./tarantool/init.lua:/opt/tarantool/init.lua
+      - ./tarantool/data:/var/lib/tarantool
+    environment:
+      - TARANTOOL_USER=${TARANTOOL_USER}
+      - TARANTOOL_PASSWORD=${TARANTOOL_PASSWORD}
+    command: tarantool /opt/tarantool/init.lua
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: kv-server
+    ports:
+      - "8080:8080"
+    environment:
+      - TARANTOOL_HOST=tarantool
+      - TARANTOOL_PORT=${TARANTOOL_PORT}
+      - TARANTOOL_USER=${TARANTOOL_USER}
+      - TARANTOOL_PASSWORD=${TARANTOOL_PASSWORD}
+    depends_on:
+      - tarantool
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    depends_on:
+      - prometheus
