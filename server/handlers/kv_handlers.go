@@ -63,7 +63,11 @@ func PutKV(conn *tarantool.Connection) http.HandlerFunc {
 			return
 		}
 
-		_, err = conn.Do(tarantool.NewUpdateRequest("kv").Key([]any{key}).Operations(tarantool.NewOperations().Assign(1, req.Value))).Get()
+		_, err = conn.Do(
+			tarantool.NewUpdateRequest("kv").
+				Key([]any{key}).
+				Operations(tarantool.NewOperations().Assign(1, req.Value)),
+		).Get()
 		if err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 			return

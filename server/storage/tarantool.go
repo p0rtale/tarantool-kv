@@ -8,7 +8,11 @@ import (
 	"github.com/tarantool/go-tarantool/v2"
 )
 
-func NewTarantoolConnection(ctx context.Context, host, port, user, password string) (*tarantool.Connection, error) {
+func NewTarantoolConnection(
+	ctx context.Context,
+	host, port string,
+	user, password string,
+) (*tarantool.Connection, error) {
 	dialer := tarantool.NetDialer{
 		Address:  host + ":" + port,
 		User:     user,
